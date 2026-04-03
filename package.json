@@ -1,0 +1,24 @@
+{
+  "name": "playwright-e2e",
+  "version": "1.0.0",
+  "description": "Modern E2E test suite using Playwright and TypeScript — UI, API, and auth flows with Page Object Model, fixtures, and parallel execution.",
+  "scripts": {
+    "test":            "playwright test",
+    "test:smoke":      "playwright test --grep @smoke",
+    "test:regression": "playwright test --grep @regression",
+    "test:api":        "playwright test tests/api/",
+    "test:headed":     "playwright test --headed",
+    "report":          "playwright show-report",
+    "codegen":         "playwright codegen"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.43.0",
+    "@types/node":      "^20.0.0",
+    "typescript":       "^5.4.0",
+    "dotenv":           "^16.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT"
+}
