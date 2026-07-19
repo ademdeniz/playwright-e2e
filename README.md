@@ -14,6 +14,7 @@
 | Layer | Tests | Tags |
 |---|---|---|
 | **Auth** | Valid login, invalid credentials, logout, empty fields | `@smoke` `@regression` |
+| **Auth guard** | Unauthenticated `/secure` redirect, session persists across reload | `@regression` |
 | **UI** | Dynamic loading, checkboxes, dropdowns | `@smoke` `@regression` |
 | **API** | GET/POST/PUT/PATCH/DELETE + status codes + headers | `@smoke` `@regression` |
 
@@ -33,6 +34,7 @@ Target apps:
 - **API testing** — uses Playwright's native `request` context, no extra libraries
 - **HTML report** — full Playwright report with timeline, screenshots, traces, and videos
 - **GitHub Actions** — smoke tests on every PR, full suite on merge to main
+- **AI test agents** — Playwright's planner/generator/healer agents wired for Claude Code (see below)
 
 ---
 
@@ -40,6 +42,13 @@ Target apps:
 
 ```
 playwright-e2e/
+├── .claude/agents/          # Playwright AI agents for Claude Code
+│   ├── playwright-test-planner.md     # explores the app, writes test plans
+│   ├── playwright-test-generator.md   # turns plans into verified specs
+│   └── playwright-test-healer.md      # diagnoses + repairs failing tests
+├── .mcp.json                # Playwright test MCP server used by the agents
+├── specs/
+│   └── login-plan.md        # AI-planned auth test plan (coverage map + gaps)
 ├── pages/
 │   ├── BasePage.ts          # Shared navigation + assertion helpers
 │   ├── LoginPage.ts         # Auth flow POM
@@ -51,7 +60,8 @@ playwright-e2e/
 │   └── apiHelpers.ts        # Typed REST helpers wrapping Playwright request context
 ├── tests/
 │   ├── auth/
-│   │   └── login.spec.ts    # 5 auth tests — valid, invalid, logout, empty
+│   │   ├── login.spec.ts        # 5 auth tests — valid, invalid, logout, empty
+│   │   └── auth-guard.spec.ts   # 2 tests — /secure guard + session persistence
 │   ├── ui/
 │   │   └── dynamic.spec.ts  # 6 UI tests — loading, checkboxes, dropdown
 │   └── api/
@@ -101,6 +111,35 @@ npm run report
 
 ---
 
+## AI QA Agents
+
+This repo is wired for **Playwright's official test agents** (v1.56+), which run
+inside [Claude Code](https://claude.com/claude-code) as purpose-built subagents:
+
+| Agent | Role |
+|---|---|
+| 🎭 **planner** | Explores the live app in a real browser and writes a human-reviewable test plan to `specs/*.md` — scenarios, steps, expected results |
+| 🎭 **generator** | Turns a plan into `*.spec.ts` files, verifying every selector and assertion against the running app while it writes |
+| 🎭 **healer** | Re-runs a failing test, inspects the live DOM at the failure point, distinguishes app bug vs. stale test, and patches the test until green |
+
+Scaffolded with `npx playwright init-agents --loop=claude` — definitions live in
+`.claude/agents/`, and `.mcp.json` registers the Playwright test MCP server they
+drive. Open this repo in Claude Code and ask e.g. *"use the planner to map test
+scenarios for the checkout flow"* or *"run the healer on the failing CI test"*.
+
+The workflow that produced real results here: the planner mapped auth coverage
+into [`specs/login-plan.md`](specs/login-plan.md) and found two gaps, the
+generator wrote [`tests/auth/auth-guard.spec.ts`](tests/auth/auth-guard.spec.ts)
+for them (both passing), and the healer-style pass uncovered a latent bug — a
+hard-coded assertion message in `LoginPage` that made the invalid-password test
+unable to ever pass.
+
+This suite also pairs with **[playwright-mcp](https://github.com/ademdeniz/playwright-mcp)**
+for the chat-driven flavor: a LibreChat agent executes these same scenarios in
+plain English against a browser via MCP (see that repo's *QA Agent Setup*).
+
+---
+
 ## Why Playwright Over Selenium
 
 | | Playwright | Selenium |
@@ -134,5 +173,5 @@ npm run report
 ## Author
 
 **Adem Garic** — SDET / QA Engineer
-4+ years in mobile and web test automation (Appium, Selenium, Playwright, Jenkins, BrowserStack)
+6+ years in mobile and web test automation (Appium, Selenium, Playwright, Jenkins, BrowserStack)
 [LinkedIn](https://linkedin.com/in/adem-garic-sdet-qa) · [GitHub](https://github.com/ademdeniz)
