@@ -5,13 +5,7 @@
     "lib":             ["ES2022", "DOM"],
     "strict":          true,
     "esModuleInterop": true,
-    "skipLibCheck":    true,
-    "baseUrl":         ".",
-    "paths": {
-      "@pages/*":    ["pages/*"],
-      "@fixtures/*": ["fixtures/*"],
-      "@utils/*":    ["utils/*"]
-    }
+    "skipLibCheck":    true
   },
   "include": ["**/*.ts"],
   "exclude": ["node_modules", "dist"]
