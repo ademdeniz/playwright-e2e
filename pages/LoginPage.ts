@@ -30,8 +30,8 @@ export class LoginPage extends BasePage {
     await expect(this.logoutButton).toBeVisible();
   }
 
-  async assertLoginFailure(): Promise<void> {
-    await expect(this.flashMessage).toContainText('Your username is invalid!');
+  async assertLoginFailure(expectedMessage = 'Your username is invalid!'): Promise<void> {
+    await expect(this.flashMessage).toContainText(expectedMessage);
   }
 
   async logout(): Promise<void> {

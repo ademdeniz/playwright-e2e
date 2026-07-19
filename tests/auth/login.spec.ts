@@ -19,7 +19,7 @@ test.describe('Authentication', () => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.login('tomsmith', 'wrongpassword');
-    await loginPage.assertLoginFailure();
+    await loginPage.assertLoginFailure('Your password is invalid!');
     await expect(page).toHaveURL(/login/);
   });
 
