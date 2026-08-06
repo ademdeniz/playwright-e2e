@@ -2,6 +2,9 @@ import { APIRequestContext } from '@playwright/test';
 
 const API_BASE = 'https://reqres.in/api';
 
+// reqres.in requires a personal key (free at app.reqres.in) sent as x-api-key
+const AUTH_HEADERS = { 'x-api-key': process.env.REQRES_API_KEY ?? '' };
+
 /**
  * Lightweight API helpers for use in tests.
  * Wraps Playwright's request context with typed responses.
@@ -12,6 +15,7 @@ export async function createUser(
   job: string
 ): Promise<{ id: string; name: string; job: string; createdAt: string }> {
   const res = await request.post(`${API_BASE}/users`, {
+    headers: AUTH_HEADERS,
     data: { name, job },
   });
   if (res.status() !== 201) {
@@ -24,7 +28,7 @@ export async function getUser(
   request: APIRequestContext,
   id: number
 ): Promise<{ id: number; email: string; first_name: string; last_name: string }> {
-  const res = await request.get(`${API_BASE}/users/${id}`);
+  const res = await request.get(`${API_BASE}/users/${id}`, { headers: AUTH_HEADERS });
   if (res.status() !== 200) {
     throw new Error(`getUser(${id}) failed: ${res.status()}`);
   }
@@ -36,7 +40,7 @@ export async function deleteUser(
   request: APIRequestContext,
   id: number
 ): Promise<void> {
-  const res = await request.delete(`${API_BASE}/users/${id}`);
+  const res = await request.delete(`${API_BASE}/users/${id}`, { headers: AUTH_HEADERS });
   if (res.status() !== 204) {
     throw new Error(`deleteUser(${id}) failed: ${res.status()}`);
   }

@@ -5,8 +5,20 @@ import { test, expect } from '@playwright/test';
  * Target: https://reqres.in/api
  *
  * No extra libraries needed — Playwright handles REST calls natively.
+ *
+ * reqres.in requires a personal API key since 2025. Create a free key at
+ * https://app.reqres.in/api-keys and expose it as REQRES_API_KEY (locally via
+ * env, in CI via a repository secret). Without it these tests skip.
  */
+const REQRES_API_KEY = process.env.REQRES_API_KEY;
+
+test.use({
+  extraHTTPHeaders: { 'x-api-key': REQRES_API_KEY ?? '' },
+});
+
 test.describe('Users API', () => {
+
+  test.skip(!REQRES_API_KEY, 'REQRES_API_KEY not set — create a free key at app.reqres.in');
 
   const API_BASE = 'https://reqres.in/api';
 

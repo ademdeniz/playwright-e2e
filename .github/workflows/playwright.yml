@@ -5,6 +5,16 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  # Nightly run at 06:00 UTC — catches drift in target apps and dependencies
+  schedule:
+    - cron: '0 6 * * *'
+  # Manual "Run workflow" button in the Actions tab
+  workflow_dispatch:
+
+env:
+  # Repository secret (Settings → Secrets and variables → Actions).
+  # API tests skip cleanly when unset.
+  REQRES_API_KEY: ${{ secrets.REQRES_API_KEY }}
 
 jobs:
   test:
@@ -22,14 +32,16 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # All browsers — the CI config enables firefox/webkit/mobile projects,
+      # so installing only chromium made those fail at launch in milliseconds.
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps
 
       - name: Run smoke tests
         run: npm run test:smoke
 
       - name: Run all tests (chromium only on PR)
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         run: npm test -- --project=chromium
 
       - name: Upload Playwright report
