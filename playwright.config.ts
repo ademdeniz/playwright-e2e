@@ -13,8 +13,14 @@ dotenv.config();
  */
 export default defineConfig({
   testDir:  './tests',
-  timeout:  30_000,         // per-test timeout
-  expect:   { timeout: 5_000 },
+
+  // Every UI test drives one shared, free-tier external host
+  // (the-internet.herokuapp.com). Its response times swing widely when
+  // several workers hit it at once, and GitHub's shared runners add their
+  // own network latency on top. These budgets are sized for that target,
+  // not for a local app — they are not masking a product bug.
+  timeout:  60_000,         // per-test timeout
+  expect:   { timeout: 15_000 },
 
   // Run tests in files in parallel
   fullyParallel: true,
@@ -25,8 +31,10 @@ export default defineConfig({
   // Retry on CI only
   retries: process.env.CI ? 2 : 0,
 
-  // Parallel workers
-  workers: process.env.CI ? 4 : undefined,
+  // Parallel workers. The suite is bound by one external host, not by local
+  // CPU, so extra workers mostly add contention on that host rather than
+  // throughput — 4 workers made login/dynamic-loading steps time out.
+  workers: process.env.CI ? 2 : undefined,
 
   reporter: [
     ['list'],
@@ -39,8 +47,8 @@ export default defineConfig({
     trace:             'on-first-retry',   // capture trace on flaky retries
     screenshot:        'only-on-failure',  // screenshot on failure
     video:             'on-first-retry',   // video on flaky retries
-    actionTimeout:     10_000,
-    navigationTimeout: 20_000,
+    actionTimeout:     20_000,  // a form submit click also waits out the navigation
+    navigationTimeout: 30_000,
   },
 
   projects: [
